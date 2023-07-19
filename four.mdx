@@ -1,0 +1,133 @@
+---
+title: "Post Four"
+date: "2024-04-28"
+tags: ["canine"]
+id: "four"
+---
+
+I want to talk today about the autoplay policy in Google Chrome and why it's critical to understand if we want to use the [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API).
+
+The developers at Google decided to implement this new [autoplay policy](https://developer.chrome.com/blog/autoplay/) to help deliver better user experiences. Many of us would probably agree that going to a website and, suddenly, getting blasted with sound would be immensely annoying.
+
+And that's the whole purpose of this autoplay policy in Google Chrome - to prevent bad user experiences!
+
+<br />
+
+## Backstory
+
+Google launched and implemented the autoplay policy in browsers at the end of 2018, although they tried to implement it earlier. A lot of folks ended up getting annoyed because this broke their code. In response, Google put the policy on hold for a while so developers could have more time to prepare and adjust their code accordingly.
+
+<br />
+
+## User Gestures
+
+Let's see how we can work with this autoplay policy in our code to ensure that users receive the audio experience we're trying to deliver.
+
+In our JavaScript file, we start by instantiating a new [audio context](https://developer.mozilla.org/en-US/docs/Web/API/AudioContext). Then, we create an oscillator and connect that oscillator to the destination(_speaker outputs_).
+
+```js
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const osc = ctx.createOscillator();
+osc.connect(ctx.destination);
+```
+
+Unfortunately, if we check the dev tools in Google Chrome, we see that we're getting a warning <Warning>The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page</Warning>.
+
+<br />
+
+What is this **user gesture**? The user gesture is an interaction the user needs to make with the page to take the audio context out of a suspended state and put it into a running state.
+
+<br />
+
+By default, even though we've instantiated an audio context in our code, **the Chrome browser will put the audio context into a state of suspension**.
+
+<br />
+
+We need to proactively do something in our code that responds to this user gesture to get that audio context started.
+
+<br />
+
+For example, let's say we're using the Web Audio API to create a synthesizer. Appropriate user gestures could be: clicking a key on the keyboard or toggling an on/off switch.
+
+The target of the user gesture can be any DOM element to which we add an event listener. And that event listener will respond by taking the audio context out of a suspended state.
+
+<br />
+
+## The Suspended State
+
+Let's examine the code a bit further.
+
+First, we'll log the property on the context(ctx) object.
+
+```js
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const osc = ctx.createOscillator();
+osc.connect(ctx.destination);
+console.log(ctx.state);
+```
+
+In the dev tools, we can see that the audio context is in a state of suspension.
+
+<br />
+<br />
+
+Then, let's log the context object.
+As we can see, we have a property with a value of.
+
+<br />
+<br />
+
+What if we called the methods on the oscillator node? (here, the oscillator will start immediately and stop after two seconds).
+
+```js
+osc.start(0);
+osc.stop(2);
+```
+
+If we look in the Chrome dev tools again, we get the same warning we were getting before <Warning>The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page</Warning>.
+
+<br />
+
+## The Resume Method
+
+So let's try something:
+
+In our HTML file, let's create a button element and give it the text content of “Play”.
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Web Audio API</title>
+  </head>
+  <body>
+    <button>Play</button>
+    <script src="app.js"></script>
+  </body>
+</html>
+```
+
+Then in our JavaScript file, let's go and grab that button from the DOM and assign it to a const.
+
+```js
+const btn = document.querySelector("button");
+```
+
+And then, let's add an event listener to that button to listen for a click event.
+
+<br />
+
+In that event handler, we'll write a callback function. In this callback function, we'll ca
+
+<br />
+
+We can call on it and pass in a function that’s going to log the (This way, we can see how the state changes after we call the m
+
+Once we save this file, we'll have a button in the browser window. When the user clicks on that button, the audio context will resume.
+
+## Conclusion
+
+Hopefully, we can now be confident that the end user will be able to hear the audio we create in the browser without being annoyed!
+
+<Video id="sLXcuCrBL-M" />
